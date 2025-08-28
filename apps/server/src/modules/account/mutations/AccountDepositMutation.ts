@@ -26,23 +26,17 @@ const mutation = mutationWithClientMutationId({
     const accountId = fromGlobalId(id).id;
 
     if (!Types.ObjectId.isValid(accountId)) {
-      return {
-        error: 'Invalid Account ID',
-      };
+      throw new Error('Invalid Account ID');
     }
 
     const account = await Account.findById(accountId);
 
     if (!account) {
-      return {
-        error: 'Account not found',
-      };
+      throw new Error('Account not found');
     }
 
     if (amount <= 0) {
-      return {
-        error: 'Amount must be greater than zero',
-      };
+      throw new Error('Amount must be greater than zero');
     }
 
     account.balance += amount;
@@ -57,7 +51,6 @@ const mutation = mutationWithClientMutationId({
       type: AccountType,
       resolve: async ({ account }) => Account.findById(account),
     },
-    ...errorField('error'),
   },
 });
 

@@ -21,6 +21,10 @@ const mutation = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: async (args: AccountAddInput) => {
+    if (args.ownerName.length <= 1) {
+      throw new Error('ownerName must be longer than 1 character');
+    }
+
     const account = await new Account({
       ownerName: args.ownerName,
     }).save();
