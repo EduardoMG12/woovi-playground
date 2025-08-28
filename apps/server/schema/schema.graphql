@@ -12,6 +12,19 @@ type Query {
     """Returns the last n items from the list."""
     last: Int
   ): MessageConnection
+  accounts(
+    """Returns the items in the list that come after the specified cursor."""
+    after: String
+
+    """Returns the first n items from the list."""
+    first: Int
+
+    """Returns the items in the list that come before the specified cursor."""
+    before: String
+
+    """Returns the last n items from the list."""
+    last: Int
+  ): AccountConnection
 }
 
 """A connection to a list of items."""
@@ -61,8 +74,35 @@ interface Node {
   id: ID!
 }
 
+"""A connection to a list of items."""
+type AccountConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [AccountEdge]
+}
+
+"""An edge in a connection."""
+type AccountEdge {
+  """The item at the end of the edge"""
+  node: Account
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""Represents a bank account"""
+type Account implements Node {
+  """The ID of an object"""
+  id: ID!
+  ownerName: String
+  balance: Int
+}
+
 type Mutation {
   MessageAdd(input: MessageAddInput!): MessageAddPayload
+  AccountAdd(input: AccountAddInput!): AccountAddPayload
 }
 
 type MessageAddPayload {
@@ -72,6 +112,16 @@ type MessageAddPayload {
 
 input MessageAddInput {
   content: String!
+  clientMutationId: String
+}
+
+type AccountAddPayload {
+  account: Account
+  clientMutationId: String
+}
+
+input AccountAddInput {
+  ownerName: String!
   clientMutationId: String
 }
 
