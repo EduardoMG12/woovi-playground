@@ -7,6 +7,7 @@ import { redisPubSub } from '../../pubSub/redisPubSub';
 import { PUB_SUB_EVENTS } from '../../pubSub/pubSubEvents';
 import { AccountType } from '../AccountType';
 import { AccountLoader } from '../AccountLoader';
+import { errorField } from '../../error/errorFields';
 
 export type AccountAddInput = {
   ownerName: string;
@@ -38,6 +39,8 @@ const mutation = mutationWithClientMutationId({
       resolve: async ({ account: id }, _, context) =>
         AccountLoader.load(context, id),
     },
+
+    ...errorField('error'),
   },
 });
 
