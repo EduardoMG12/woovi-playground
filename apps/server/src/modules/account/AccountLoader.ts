@@ -1,20 +1,20 @@
-import { createLoader } from "@entria/graphql-mongo-helpers";
+import { createLoader } from '@entria/graphql-mongo-helpers';
 
-import { registerLoader } from "../loader/loaderRegister";
+import { registerLoader } from '../loader/loaderRegister';
 
-import { Account } from "./AccountModel";
+import { Account } from './AccountModel';
 
 const { Wrapper, getLoader, clearCache, load, loadAll } = createLoader({
-	model: Account,
-	loaderName: "AccountLoader",
+  model: Account,
+  loaderName: 'AccountLoader',
 });
 
-registerLoader("AccountLoader", getLoader);
+registerLoader('AccountLoader', getLoader);
 
 export const AccountLoader = {
-	Account: Wrapper,
-	getLoader,
-	clearCache,
-	load,
-	loadAll,
+  Account: Wrapper,
+  getLoader,
+  clearCache,
+  load,
+  loadAll,
 };
