@@ -107,11 +107,17 @@ git clone https://github.com/entria/woovi-playground.git
     pnpm relay
     ```
 
-5. Run the Project
+5. Run the Project or use step 6
 
    ```sh
    pnpm dev
    ```
+
+6. Or just build with docker
+
+```sh
+docker-compose up --build
+```
 
 <!-- CONTRIBUTING -->
 
@@ -153,3 +159,176 @@ Project Link: [https://github.com/entria/woovi-playground](https://github.com/en
 [mongodb-url]: https://mongodb.com
 [koa]: https://img.shields.io/badge/Koa-F9F9F9?style=for-the-badge&logo=koa&logoColor=33333D
 [koa-url]: https://koajs.com
+
+---
+
+GraphQL Documentation for Postman
+The woovi-playground project's GraphQL API uses a single endpoint for all queries and mutations.
+Endpoint: http://38.242.140.118:4000/graphql
+All requests must be of type POST and the request body must be application/json.
+Accounts
+Create an Account
+Description: Creates a new account.
+Mutation:
+
+
+
+```json
+
+mutation AddAccount($input: AccountAddInput!) {
+  AccountAdd(input: $input) {
+    account {
+      id
+      ownerName
+      balance
+    }
+    error
+  }
+}
+```
+
+Variables (example):
+
+
+
+```json
+
+{
+  "input": {
+    "ownerName": "John Doe"
+  }
+}
+
+```
+Deposit to an Account
+Description: Deposits a specified amount into an existing account.
+Mutation:
+
+
+
+```json
+
+mutation DepositToAccount($input: AccountDepositInput!) {
+  AccountDeposit(input: $input) {
+    account {
+      id
+      ownerName
+      balance
+    }
+    error
+  }
+}
+
+```
+
+
+Variables (example):
+
+
+
+```json
+
+
+{
+  "input": {
+    "id": "QWNjb3VudDoy",
+    "amount": 10000
+  }
+}
+
+```
+
+List Accounts
+Description: Fetches a list of all accounts.
+Query:
+
+
+
+```json
+
+
+query AllAccounts {
+  accounts(first: 10) {
+    edges {
+      node {
+        id
+        ownerName
+        balance
+      }
+    }
+  }
+}
+
+```
+
+Transactions
+Add a Transaction
+Description: Creates a transaction between two accounts, debiting from one and crediting the other.
+Mutation:
+
+
+
+```json
+
+mutation AddTransaction($input: TransactionAddInput!) {
+  TransactionAdd(input: $input) {
+    transaction {
+      id
+      amount
+      type
+      account {
+        id
+        ownerName
+      }
+    }
+  }
+}
+
+```
+
+Variables (example):
+
+
+
+```json
+
+
+{
+  "input": {
+    "fromAccountId": "QWNjb3VudDox",
+    "toAccountId": "QWNjb3VudDoy",
+    "amount": 5000
+  }
+}
+
+```
+
+List Transactions
+Description: Returns a list of all transactions.
+Query:
+
+
+
+```json
+
+query AllTransactions {
+  transactions(first: 10) {
+    edges {
+      node {
+        id
+        amount
+        type
+        account {
+          id
+          ownerName
+        }
+        pair {
+          id
+        }
+      }
+    }
+  }
+}
+
+```
+#### postman url: https://planetary-water-186042.postman.co/workspace/my_projects~91c0d67c-574f-4e9b-afa4-02d37cc1f93f/collection/68b0a01fbc88542b2e04c9b0?action=share&creator=33756963
