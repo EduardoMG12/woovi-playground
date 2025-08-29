@@ -1,4 +1,4 @@
-import type { Document, Model, Types } from 'mongoose';
+import type { Document, Model } from 'mongoose';
 import mongoose from 'mongoose';
 
 const AccountSchema = new mongoose.Schema<IAccount>(
@@ -7,13 +7,6 @@ const AccountSchema = new mongoose.Schema<IAccount>(
       type: String,
       description: 'The name of the account owner.',
       required: true,
-    },
-    balance: {
-      type: Number,
-      description:
-        'The available balance of the account in cents (e.g., $10.50 is stored as 1050).',
-      required: true,
-      default: 0,
     },
   },
   {
@@ -24,7 +17,6 @@ const AccountSchema = new mongoose.Schema<IAccount>(
 
 export type IAccount = {
   ownerName: string;
-  balance: number;
   createdAt: Date;
   updatedAt: Date;
 } & Document;

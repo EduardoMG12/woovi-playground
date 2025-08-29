@@ -1,11 +1,5 @@
-import {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLNonNull,
-  GraphQLInt,
-} from 'graphql';
+import { GraphQLObjectType, GraphQLString, GraphQLNonNull, GraphQLInt } from 'graphql';
 import { globalIdField, connectionDefinitions } from 'graphql-relay';
-import type { ConnectionArguments } from 'graphql-relay';
 
 import type { ITransaction } from './TransactionModel';
 import { nodeInterface } from '../node/typeRegister';
@@ -15,35 +9,42 @@ import { AccountLoader } from '../account/AccountLoader';
 import { AccountType } from '../account/AccountType';
 
 const TransactionType = new GraphQLObjectType<ITransaction>({
-  name: 'Transaction',
-  description: 'Represents a bank transaction',
-  fields: () => ({
-    id: globalIdField('Transaction'),
-    amount: {
-      type: GraphQLInt,
-      resolve: (transaction) => transaction.amount,
-    },
-    fromAccount: {
-      type: AccountType,
-      resolve: async (transaction, _, context) =>
-        AccountLoader.load(context, transaction.fromAccount),
-    },
-    toAccount: {
-      type: AccountType,
-      resolve: async (transaction, _, context) =>
-        AccountLoader.load(context, transaction.toAccount),
-    },
-    createdAt: {
-      type: GraphQLString,
-      resolve: (transaction) => transaction.createdAt.toISOString(),
-    },
-  }),
-  interfaces: () => [nodeInterface],
+	name: 'Transaction',
+	description: 'Represents a ledger transaction entry (debit or credit).',
+	fields: () => ({
+		id: globalIdField('Transaction'),
+		amount: {
+			type: GraphQLString,
+			resolve: (transaction) => (transaction.amount / 100).toFixed(2),
+		},
+        type: {
+            type: GraphQLString,
+            resolve: (transaction) => transaction.type,
+        },
+        account: {
+            type: AccountType,
+            resolve: async (transaction, _, context) => AccountLoader.load(context, transaction.accountId),
+        },
+		createdAt: {
+			type: GraphQLString,
+			resolve: (transaction) => transaction.createdAt.toISOString(),
+		},
+        pair: {
+            type: TransactionType,
+            resolve: async (transaction, _, context) => {
+                if (!transaction.pairId) {
+                    return null;
+                }
+                return await TransactionLoader.load(context, transaction.pairId);
+            },
+        },
+	}),
+	interfaces: () => [nodeInterface],
 });
 
 const TransactionConnection = connectionDefinitions({
-  name: 'Transaction',
-  nodeType: TransactionType,
+	name: 'Transaction',
+	nodeType: TransactionType,
 });
 
 registerTypeLoader(TransactionType, TransactionLoader.load);

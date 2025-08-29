@@ -1,13 +1,11 @@
 import { GraphQLString, GraphQLNonNull } from 'graphql';
 import { mutationWithClientMutationId } from 'graphql-relay';
-
-import { Account } from '../AccountModel';
-import { accountField } from '../accountFields';
 import { redisPubSub } from '../../pubSub/redisPubSub';
 import { PUB_SUB_EVENTS } from '../../pubSub/pubSubEvents';
 import { AccountType } from '../AccountType';
 import { AccountLoader } from '../AccountLoader';
 import { errorField } from '../../error/errorFields';
+import { createAccount } from './AccountService';
 
 export type AccountAddInput = {
   ownerName: string;
@@ -21,21 +19,19 @@ const mutation = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: async (args: AccountAddInput) => {
-    if (args.ownerName.length <= 1) {
-      throw new Error('ownerName must be longer than 1 character');
+    try {
+      const account = await createAccount(args.ownerName);
+
+      redisPubSub.publish(PUB_SUB_EVENTS.ACCOUNT.ADDED, {
+        account: account._id.toString(),
+      });
+
+      return {
+        account: account._id.toString(),
+      };
+    } catch (error) {
+      throw new Error(error.message)
     }
-
-    const account = await new Account({
-      ownerName: args.ownerName,
-    }).save();
-
-    redisPubSub.publish(PUB_SUB_EVENTS.ACCOUNT.ADDED, {
-      account: account._id.toString(),
-    });
-
-    return {
-      account: account._id.toString(),
-    };
   },
   outputFields: {
     account: {
@@ -43,7 +39,6 @@ const mutation = mutationWithClientMutationId({
       resolve: async ({ account: id }, _, context) =>
         AccountLoader.load(context, id),
     },
-
     ...errorField('error'),
   },
 });

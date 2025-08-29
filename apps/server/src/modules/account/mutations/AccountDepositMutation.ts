@@ -1,59 +1,50 @@
-import { GraphQLID, GraphQLInt, GraphQLNonNull, GraphQLString } from 'graphql';
+import { GraphQLID, GraphQLInt, GraphQLNonNull } from 'graphql';
 import { fromGlobalId, mutationWithClientMutationId } from 'graphql-relay';
-import { AccountLoader } from '../AccountLoader';
 import { AccountType } from '../AccountType';
 import { Account } from '../AccountModel';
 import { errorField } from '../../error/errorFields';
-import { Types } from 'mongoose';
+import { depositToAccount } from './AccountService';
 
 type AccountDepositInput = {
-  id: string;
-  amount: number;
+    id: string;
+    amount: number;
 };
 
 const mutation = mutationWithClientMutationId({
-  name: 'AccountDeposit',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID),
+    name: 'AccountDeposit',
+    inputFields: {
+        id: {
+            type: new GraphQLNonNull(GraphQLID),
+        },
+        amount: {
+            type: new GraphQLNonNull(GraphQLInt),
+        },
     },
-    amount: {
-      type: new GraphQLNonNull(GraphQLInt),
+    mutateAndGetPayload: async (args: AccountDepositInput) => {
+        try {
+            await depositToAccount(args.id, args.amount);
+
+            return {
+                account: args.id,
+            };
+        } catch (error) {
+            return {
+                error: error.message,
+            };
+        }
     },
-  },
-  mutateAndGetPayload: async (args: AccountDepositInput) => {
-    const { id, amount } = args;
-    const accountId = fromGlobalId(id).id;
-
-    if (!Types.ObjectId.isValid(accountId)) {
-      throw new Error('Invalid Account ID');
-    }
-
-    const account = await Account.findById(accountId);
-
-    if (!account) {
-      throw new Error('Account not found');
-    }
-
-    if (amount <= 0) {
-      throw new Error('Amount must be greater than zero');
-    }
-
-    account.balance += amount;
-    await account.save();
-
-    return {
-      account: account._id.toString(),
-    };
-  },
-  outputFields: {
-    account: {
-      type: AccountType,
-      resolve: async ({ account }) => Account.findById(account),
+    outputFields: {
+        account: {
+            type: AccountType,
+            resolve: async ({ account: id }) => {
+                const { id: accountId } = fromGlobalId(id);
+                return Account.findById(accountId);
+            },
+        },
+        ...errorField('error'),
     },
-  },
 });
 
 export const AccountDepositMutation = {
-  ...mutation,
+    ...mutation,
 };
